@@ -2,19 +2,31 @@
 
 A Bloomberg-inspired trading terminal with live streaming market data and an AI assistant that can analyze your portfolio and execute trades via natural language.
 
-## Quick Start
+## Status
 
-```bash
-# Copy and configure environment variables
-cp .env.example .env
+| Component | Status |
+|---|---|
+| Market data subsystem (simulator + Polygon.io client, SSE stream) | Complete |
+| Backend API routes (portfolio, watchlist, chat, health) | Not started |
+| Database layer (SQLite, schema, seed data) | Not started |
+| LLM integration (chat, trade execution) | Not started |
+| Frontend (Next.js, charts, heatmap, AI chat panel) | Not started |
+| Docker build & deployment scripts | Not started |
+| E2E tests (Playwright) | Not started |
 
-# Start the app (single Docker container)
-docker run -v finally-data:/app/db -p 8000:8000 --env-file .env finally
-```
+## What's Built
 
-Open [http://localhost:8000](http://localhost:8000). No login required — you start with $10,000 in virtual cash.
+The `backend/app/market/` package provides a complete market data layer:
 
-## Features
+- **GBM simulator** — geometric Brownian motion with correlated sector moves and random shock events
+- **Polygon.io REST client** — polls real market data when `MASSIVE_API_KEY` is set
+- **Shared interface** — both sources implement the same ABC; downstream code is source-agnostic
+- **Thread-safe price cache** — single point of truth for producers and consumers
+- **SSE stream endpoint** — version-based change detection, `/api/stream/prices`
+
+73 tests passing, 84% coverage. Demo: `cd backend && uv run market_data_demo.py`
+
+## Planned Features
 
 - Live-streaming prices with green/red flash animations and sparkline mini-charts
 - Buy/sell via market orders — instant fill, no confirmation dialog
@@ -39,16 +51,6 @@ Single container, port 8000:
 - **Real-time**: Server-Sent Events (`GET /api/stream/prices`)
 - **Market data**: GBM simulator by default; Polygon.io REST polling if `MASSIVE_API_KEY` is set
 - **LLM**: LiteLLM → OpenRouter (Cerebras inference) with structured JSON outputs
-
-## Development
-
-```bash
-# Backend
-cd backend && uv sync --extra dev && uv run pytest -v
-
-# Frontend
-cd frontend && npm install && npm run dev
-```
 
 ## Simulator Tickers
 
